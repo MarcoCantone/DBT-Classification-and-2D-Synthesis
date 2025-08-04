@@ -1,0 +1,76 @@
+BACKBONE:
+  gray: true
+  layerToDiscard: 0
+  model:
+    class: customModels.resnet18_features
+    params:
+      weights: DEFAULT
+      avgpool_dim:
+      - 1
+      - 1
+DATASET:
+  class: customDatasets.BCS_DBT
+  params:
+    root: /ssd2/dellascenza/datasets/BCS-DBT_cropped/
+    slices: 'lambda n: np.linspace(0, n-1, 11, dtype=int)'
+DATA_TRANSFORM:
+- class: customTransform.ToTensorFloat32
+  params: {}
+- class: torchvision.transforms.Resize
+  params:
+    antialias: true
+    size:
+    - 1024
+    - 512
+- class: customTransform.MinMax
+  params: {}
+- class: customTransform.toMonaiShape
+  params: {}
+LOSS:
+  class: torch.nn.CrossEntropyLoss
+  params: {}
+MODEL:
+  class: customModels.SoftAttn_slice
+  params:
+    img_size:
+    - 1024
+    - 512
+    num_classes: 3
+OPTIMIZER:
+  class: torch.optim.SGD
+  params:
+    lr: 0.001
+    momentum: 0.9
+SCHEDULER:
+  class: torch.optim.lr_scheduler.StepLR
+  params:
+    step_size: 10
+    gamma: 0.2
+TARGET_TRANSFORM:
+- class: customTransform.OneHot
+  params:
+    num_classes: 3
+TRAINING:
+  seeds:
+  - 42
+  - 42
+  - 42
+  - 43
+  - 43
+  - 43
+  - 44
+  - 44
+  - 44
+  device: cuda:1
+  grad_acc: False
+  grad_scaler: False
+  frozen_perc: 0
+  deterministic: False
+  resume: False
+  epochs: 30
+  num_workers: 15
+  parallel:  null
+  batch_size: 4
+  batch_size_val: 4
+  inference: False
+  workspace: /home/dellascenza/results/OMIDB/DBT/softonly/resnet18/

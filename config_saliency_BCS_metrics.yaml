@@ -1,0 +1,49 @@
+BACKBONE:
+  gray: true
+  layerToDiscard: 0
+  model:
+    class: customModels.resnet18_features
+    params:
+      weights: DEFAULT
+      avgpool_dim:
+      - 1
+      - 1
+DATASET:
+  class: customDatasets.BCS_DBT
+  params:
+    root: /ssd2/dellascenza/datasets/BCS-DBT_cropped_boxes/
+    slices: 'lambda n: np.linspace(0, n-1, 11, dtype=int)'
+DATA_TRANSFORM:
+- class: customTransform.ToTensorFloat32
+  params: {}
+- class: torchvision.transforms.Resize
+  params:
+    antialias: true
+    size:
+    - 1024
+    - 512
+- class: customTransform.MinMax
+  params: {}
+MODEL:
+  class: customModels.SelfPatch_softSlice
+  params:
+    patch_size: 128
+    img_size:
+    - 1024
+    - 512
+    num_classes: 2
+    num_slices: 11
+    num_heads: 4
+  points: 6
+TARGET_TRANSFORM:
+- class: customTransform.OneHot
+  params:
+    num_classes: 2
+TRAINING:
+  device: cuda:2
+  resume: False
+  epochs: 45
+  num_workers: 15
+  parallel: null
+  split_seed: 43
+  workspace: /home/dellascenza/results/OMIDB/task-mal-nonmal/softself/patch-128/resnet18/run-5_seed-43/

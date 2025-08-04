@@ -1,0 +1,52 @@
+BACKBONE:
+  gray: true
+  layerToDiscard: 0
+  model:
+    class: customModels.resnet18_features
+    params:
+      weights: DEFAULT
+      avgpool_dim:
+      - 1
+      - 1
+DATASET:
+  class: customDatasets.OMITomoSlices
+  params:
+    label_files:
+    - normal.txt
+    - malignant.txt
+    root: /super-ssd/Cantone/datasets/OMIDB.tomo.SlicesPNG.cropped/
+    slices: 'lambda n: np.linspace(0, n-1, 11, dtype=int)'
+DATA_TRANSFORM:
+- class: customTransform.ToTensorFloat32
+  params: {}
+- class: torchvision.transforms.Resize
+  params:
+    antialias: true
+    size:
+    - 1024
+    - 512
+- class: customTransform.MinMax
+  params: {}
+MODEL:
+  class: customModels.SelfPatch_softSlice
+  params:
+    patch_size: 256
+    img_size:
+    - 1024
+    - 512
+    num_classes: 2
+    num_slices: 11
+    num_heads: 4
+  points: 3
+TARGET_TRANSFORM:
+- class: customTransform.OneHot
+  params:
+    num_classes: 2
+TRAINING:
+  device: cuda:2
+  resume: False
+  epochs: 1
+  num_workers: 15
+  parallel:  null
+  split_seed: 43
+  workspace: /home/dellascenza/results/OMIDB/task-mal-nonmal/softself/patch-256/resnet18/run-4_seed-43/
