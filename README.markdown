@@ -27,6 +27,7 @@ The script’s behavior depends on the number of training epochs set: <br>
     •	Epochs = 0 → evaluation mode (i.e., inference on the defined test set) <br>
 [Configuration File](configs/config_2D.yaml)
 
+
 3) _saliency.py_: **generates 2D synthetic images using a pre-trained 3D model**.
 This script was specifically designed for use with the OMI-DB dataset. <br>
 [Configuration File](configs/config_saliency.yaml) 
