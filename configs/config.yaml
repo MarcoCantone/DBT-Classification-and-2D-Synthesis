@@ -2,16 +2,16 @@ BACKBONE:
   gray: true
   layerToDiscard: 0
   model:
-    class: customModels.resnet18_features
+    class: customModels.resnet18_features # Backbone class
     params:
       weights: DEFAULT
       avgpool_dim:
       - 1
       - 1
 DATASET:
-  class: customDatasets.BCS_DBT
+  class: customDatasets.BCS_DBT # Dataset class used
   params:
-    root: /ssd2/dellascenza/datasets/BCS-DBT_cropped/
+    root: /ssd2/dellascenza/datasets/BCS-DBT_cropped/ # Dataset main path
     slices: 'lambda n: np.linspace(0, n-1, 11, dtype=int)'
 DATA_TRANSFORM:
 - class: customTransform.ToTensorFloat32
@@ -73,4 +73,4 @@ TRAINING:
   batch_size: 4
   batch_size_val: 4
   inference: False
-  workspace: /home/dellascenza/results/OMIDB/DBT/softonly/resnet18/
+  workspace: /home/dellascenza/results/OMIDB/DBT/softonly/resnet18/ # Workspace path

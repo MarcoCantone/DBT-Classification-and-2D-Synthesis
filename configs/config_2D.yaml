@@ -1,0 +1,51 @@
+DATASET:
+  class: customDatasets.OptimamTomoSurf # Dataset class
+  params:
+    root: /data/dellascenza/newtask/Tomo2Dsynt_softself/patch-256_numpoints-6/ # Dataset root
+DATA_TRANSFORM: # Preprocessing
+- class: customTransform.ToTensorFloat32
+  params: {}
+- class: torchvision.transforms.Resize
+  params:
+    antialias: true
+    size:
+    - 1024
+    - 512
+- class: customTransform.MinMax
+  params: {}
+LOSS:
+  class: torch.nn.CrossEntropyLoss
+  params: {}
+MODEL:
+  class: customModels.efficientnetb3 # Model class
+  params:
+    weights: "DEFAULT"
+    num_classes: 2
+OPTIMIZER:
+  class: torch.optim.SGD
+  params:
+    lr: 0.001
+    momentum: 0.9
+SCHEDULER:
+  class: torch.optim.lr_scheduler.StepLR
+  params:
+    step_size: 10
+    gamma: 0.2
+TARGET_TRANSFORM:
+- class: customTransform.OneHot
+  params:
+    num_classes: 2
+TRAINING:
+  device: cuda:2
+  deterministic: False
+  runs: 1
+  resume: False
+  epochs: 30
+  seeds:
+  - 43
+  num_workers: 0
+  parallel:  null
+  test_batch_size: 4
+  train_batch_size: 4
+  inference: False
+  workspace: /home/dellascenza/results/OMIDB/task-mal-nonmal/CNN-results/softself256_effnetb3_numpoints-6/ # Workspace directory

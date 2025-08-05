@@ -2,16 +2,16 @@ BACKBONE:
   gray: true
   layerToDiscard: 0
   model:
-    class: customModels.resnet18_features
+    class: customModels.resnet18_features # Backbone class
     params:
       weights: DEFAULT
       avgpool_dim:
       - 1
       - 1
 DATASET:
-  class: customDatasets.BCS_DBT
+  class: customDatasets.BCS_DBT # Dataset class
   params:
-    root: /ssd2/dellascenza/datasets/BCS-DBT_cropped/
+    root: /ssd2/dellascenza/datasets/BCS-DBT_cropped/ # Dataset path
     slices: 'lambda n: np.linspace(0, n-1, 11, dtype=int)'
 DATA_TRANSFORM:
 - class: customTransform.ToTensorFloat32
@@ -25,7 +25,7 @@ DATA_TRANSFORM:
 - class: customTransform.MinMax
   params: {}
 MODEL:
-  class: customModels.SelfPatch_softSlice
+  class: customModels.SelfPatch_softSlice # Model class
   params:
     patch_size: 256
     img_size:
@@ -45,4 +45,4 @@ TRAINING:
   num_workers: 15
   parallel:  null
   split_seed: 44
-  workspace: /home/dellascenza/results/OMIDB/task-mal-nonmal/softself/patch-256/resnet18/run-9_seed-44/
+  workspace: /home/dellascenza/results/OMIDB/task-mal-nonmal/softself/patch-256/resnet18/run-9_seed-44/ # Workspace path

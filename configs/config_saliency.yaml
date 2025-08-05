@@ -2,16 +2,19 @@ BACKBONE:
   gray: true
   layerToDiscard: 0
   model:
-    class: customModels.resnet18_features
+    class: customModels.resnet18_features # Backbone class
     params:
       weights: DEFAULT
       avgpool_dim:
       - 1
       - 1
 DATASET:
-  class: customDatasets.BCS_DBT
+  class: customDatasets.OMITomoSlices # Dataset Class
   params:
-    root: /ssd2/dellascenza/datasets/BCS-DBT_cropped_boxes/
+    label_files:
+    - normal.txt
+    - malignant.txt
+    root: /super-ssd/Cantone/datasets/OMIDB.tomo.SlicesPNG.cropped/ # Dataset main path
     slices: 'lambda n: np.linspace(0, n-1, 11, dtype=int)'
 DATA_TRANSFORM:
 - class: customTransform.ToTensorFloat32
@@ -25,16 +28,16 @@ DATA_TRANSFORM:
 - class: customTransform.MinMax
   params: {}
 MODEL:
-  class: customModels.SelfPatch_softSlice
+  class: customModels.SelfPatch_softSlice # Model class
   params:
-    patch_size: 128
+    patch_size: 256
     img_size:
     - 1024
     - 512
     num_classes: 2
     num_slices: 11
     num_heads: 4
-  points: 6
+  points: 3
 TARGET_TRANSFORM:
 - class: customTransform.OneHot
   params:
@@ -42,8 +45,8 @@ TARGET_TRANSFORM:
 TRAINING:
   device: cuda:2
   resume: False
-  epochs: 45
+  epochs: 1
   num_workers: 15
-  parallel: null
+  parallel:  null
   split_seed: 43
-  workspace: /home/dellascenza/results/OMIDB/task-mal-nonmal/softself/patch-128/resnet18/run-5_seed-43/
+  workspace: /home/dellascenza/results/OMIDB/task-mal-nonmal/softself/patch-256/resnet18/run-4_seed-43/ # Workspace path
