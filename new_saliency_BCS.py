@@ -64,25 +64,13 @@ def save_surfaces(save_path, dataset, config):
         avg_attn = attn_weights[0][slice, 0, 1:].detach().cpu().numpy()
         # Reshape attention map to match the patch grid
         avg_attn = avg_attn.reshape(int(h / patch_size), int(w / patch_size))
-        # Resize the attention map to the size of the input image
-        # attn_map_resized = F.interpolate(torch.tensor(avg_attn).unsqueeze(0).unsqueeze(0), size=(1024, 512), mode='bilinear', align_corners=False).squeeze().numpy()
-
-        attn_map = F.interpolate(torch.tensor(avg_attn).unsqueeze(0).unsqueeze(0), size=(h, w)).squeeze().numpy()
-
-        # Image.fromarray(attn_map * ((2 ** 8) - 1)).convert("RGB").save(
-        #     save_path_images + "attention_map/" + relative_path + '/' + file_name + ".png")
 
         saliency = attn_weights[1].permute(1, 0, 2) * attn_weights[0][:, 0, 1:].reshape(num_slices, int(h / patch_size),
                                                                                         int(w / patch_size))
 
-        num_points = 12
-        # Flatten del tensore e ottenimento delle posizioni ordinate
+        num_points = config["MODEL"]["points"]
         flat_indices = np.argsort(saliency.detach().numpy(), axis=None)[::-1]  # Ordina gli indici in ordine decrescente
-        # Creiamo una lista per le posizioni complete
         positions_list = [np.unravel_index(idx, saliency.shape) for idx in flat_indices]
-        # Visualizziamo i risultati
-        # for item in positions_list:
-        #     print(item)
 
         dictionary = {i: positions_list[i] for i in range(len(positions_list))}
 
@@ -101,11 +89,7 @@ def save_surfaces(save_path, dataset, config):
         matrix[:, 1] = (matrix[:, 1] * patch_size) + patch_size / 2
         matrix[:, 2] = (matrix[:, 2] * patch_size) + patch_size / 2
 
-        # print(matrix)
-        # print(h)
-        # print(w)
-        # print(patch_size)
-        # Interpolazione con Thin Plate Spline usando Rbf
+        # Thin plate spline interpolation
         rbf_spline = Rbf(matrix[:, 2], matrix[:, 1], matrix[:, 0], function='thin_plate')
         x_range = np.arange(w)
         y_range = np.arange(h)
@@ -114,25 +98,6 @@ def save_surfaces(save_path, dataset, config):
         Z_spline = rbf_spline(X, Y)
         Z_spline = np.clip(Z_spline, 0, img.shape[0] - 1)
         Z_spline = np.round(Z_spline).astype(int)
-
-        # # 5. Genera un grafico 3D
-        # fig = plt.figure()
-        # ax = fig.add_subplot(111, projection='3d')
-        #
-        # # Aggiungi i punti di controllo originali nel grafico
-        # ax.scatter(matrix[:,2], matrix[:,1], matrix[:,0], color='blue', label='Punti di Controllo')
-        #
-        # # Plot della superficie 3D
-        # ax.plot_surface(X, Y, Z_spline, color='green', alpha=0.7)
-        #
-        # # Etichette e titolo
-        # ax.set_xlabel('X')
-        # ax.set_ylabel('Y')
-        # ax.set_zlabel('Z')
-        # ax.set_zlim(0, img.shape[0] - 1)  # Lim
-        # ax.set_title('Interpolazione Thin Plate Spline')
-        #
-        # plt.show()
 
         output_image = np.zeros((h, w))
 
@@ -143,10 +108,6 @@ def save_surfaces(save_path, dataset, config):
         Image.fromarray(output_image * ((2 ** 8) - 1)).convert("RGB").save(
             save_path_images + relative_path + "saliency.png")
 
-        # plt.imshow(output_image, cmap='gray')
-        # plt.title("Saliency Map")
-        # plt.show()
-
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--config", type=str, default=None)
@@ -154,7 +115,7 @@ args = parser.parse_args()
 
 config = load_config(args.config)
 
-print("File di configurazione selezionato: " + str(args.config))
+print("Config selected: " + str(args.config))
 
 transform_list = []
 for i in range(len(config["DATA_TRANSFORM"])):
@@ -170,7 +131,7 @@ config["DATASET"]["params"].update({"data_transform": data_transform, "target_tr
 config["DATASET"]["params"].update({"slices": None})
 inference_dataset = get_class_by_path(config["DATASET"]["class"])(**config["DATASET"]["params"])
 
-print("Classe del dataset selezionata: " + str(config["DATASET"]["class"]))
+print("Class dataset: " + str(config["DATASET"]["class"]))
 
 backbone = create_object_from_dict(config["BACKBONE"]["model"])
 if config["BACKBONE"]["gray"]:
@@ -182,16 +143,18 @@ if has_parameter(model_class, "backbone"):
     config["MODEL"]["params"].update({"backbone": backbone})
 model = create_object_from_dict(config["MODEL"])
 
-print("Modello selezionato: " + str(config["MODEL"]["class"]))
+print("Selected model: " + str(config["MODEL"]["class"]))
 
 model.load_state_dict(torch.load(os.path.join(config["TRAINING"]["workspace"], "best_model.pth"), map_location="cpu"))
 
-print("Percorso del modello selezionato: " + str(config["TRAINING"]["workspace"]))
+print("Workspace selected: " + str(config["TRAINING"]["workspace"]))
 
 Omi_classes = {0: "Normal", 1: "Malignant"}
 
-save_path_images = "/data/dellascenza/newtask/Tomo2Dsynt_softself/BCS/patch-256/seed-44/"
+save_path_images = "Tomo2Dsynt_softself/BCS/patch-256/seed-44/"
 
-print("Percorso in cui verranno salavate le superfici: " + save_path_images)
+print("Path where surfaces will be saved: " + save_path_images)
+
+print("Number of points used:" + str(config["MODEL"]["points"]))
 
 save_surfaces(save_path_images + "inference/", inference_dataset, config)

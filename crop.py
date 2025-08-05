@@ -1,14 +1,7 @@
 import os
-
-import cv2
-
 from customDatasets import BCS_DBT
-import cv2 as cv
+import cv2
 import numpy as np
-import random
-import matplotlib.pyplot as plt
-import time
-import pandas as pd
 
 def conditionalflip(image):
 
@@ -37,13 +30,13 @@ def find_bounding_box(binary_image):
 
 # ------- FIND 3D BOUNDING BOXES AND SAVE MINIATURES -------
 
-data_root = "/ssd2/dellascenza/datasets/BCS-DBT_boxes/"
+data_root = "BCS-DBT_boxes/"
 
-save_path = "/ssd2/dellascenza/datasets/BCS-DBT_cropped_boxes/"
+save_path = "BCS-DBT_cropped_boxes/"
 
 with open(save_path + "crop_coords_new_final.csv", "w") as f:
     f.write("Path,min_x,min_y,min_z,max_x,max_y,max_z,View,Class,Slice,X,Y,Width,Height,flipped,img_width,img_height\n")
-    data = BCS_DBT(root=data_root, labels_file="/ssd2/dellascenza/datasets/BCS-DBT_cropped_boxes/info.csv",
+    data = BCS_DBT(root=data_root, labels_file="BCS-DBT_cropped_boxes/info.csv",
                                                               boxes=True)
     for i in range(len(data)):
         print(i)
@@ -65,64 +58,21 @@ with open(save_path + "crop_coords_new_final.csv", "w") as f:
 
         img = img.transpose(1, 2, 0)
 
-        _, bin = cv.threshold(img, 30, 255, cv.THRESH_BINARY)
+        _, bin = cv2.threshold(img, 30, 255, cv2.THRESH_BINARY)
 
         min_coords, max_coords = find_bounding_box(bin)
         x_min, y_min, z_min, x_max, y_max, z_max = min_coords[1], min_coords[0], min_coords[2], max_coords[1], max_coords[0], max_coords[2]
 
         f.write(f'{new_path},{x_min},{y_min},{z_min},{x_max},{y_max},{z_max},{info[0]},{info[1]},{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]},{bbox[4]},{need_to_flip_coords},{img.shape[1]},{img.shape[0]}\n')
 
-        image_with_bbox = cv.cvtColor(img.max(2), cv.COLOR_GRAY2BGR)
-        # cv.rectangle(image_with_bbox, (min_coords[1], min_coords[0]), (max_coords[1], max_coords[0]), (0, 255, 0), 20)
-        #
-        # image_with_bbox = cv.resize(image_with_bbox, (0, 0), fx=0.2, fy=0.2)
-        #
-        # x_min, y_min, z_min, x_max, y_max, z_max = min_coords[1], min_coords[0], min_coords[2], max_coords[1], max_coords[0], max_coords[2]
+        image_with_bbox = cv2.cvtColor(img.max(2), cv2.COLOR_GRAY2BGR)
+
         for k in range(z_min, z_max):
-            single_slice = cv.imread(os.path.join(original_path, str(k) + ".png"), cv.IMREAD_GRAYSCALE)
+            single_slice = cv2.imread(os.path.join(original_path, str(k) + ".png"), cv2.IMREAD_GRAYSCALE)
 
             if flip:
                 single_slice = cv2.flip(single_slice, 1)
 
             cropped_slice = single_slice[y_min:y_max + 1, x_min:x_max + 1]
             os.makedirs(os.path.join(save_path, new_path), exist_ok=True)
-            cv.imwrite(os.path.join(os.path.join(save_path, new_path), str(k)+ ".png"), cropped_slice)
-
-# # ------- CREATE CROPPED DATASET -------
-#
-# import os
-# import pandas as pd
-# import time
-#
-# dest_dir = "/data/cantone/datasets/OMIDB.tomo.SlicesPNG.cropped/"
-# root = "/data/cantone/datasets/OMIDB.tomo.SlicesPNG/"
-# clients = os.listdir(root)
-# tot = len(clients)
-# coords = pd.read_csv("/home/cantone/Datasets/OMITomoSlices/crop_coords.csv")
-#
-# start = time.time()
-# for j, client in enumerate(clients):
-#     print(f'{client}  ({j}/{tot})')
-#     if j>5:
-#         elapsed = time.time()-start
-#         eta = (elapsed/j)*(tot-j)
-#         print(f'eta={eta}')
-#     if os.path.isdir(os.path.join(dest_dir, client)):
-#         print(f'{os.path.join(dest_dir, client)} already exist')
-#         continue
-#     if os.path.isfile(os.path.join(root, client)):
-#         print(f'skipping {os.path.join(root, client)}')
-#         continue
-#     os.makedirs(os.path.join(dest_dir, client))
-#     studies = os.listdir(os.path.join(root, client))
-#     for study in studies:
-#         os.makedirs(os.path.join(dest_dir, client, study))
-#         images = os.listdir(os.path.join(root, client, study))
-#         for img in images:
-#             os.makedirs(os.path.join(dest_dir, client, study, img))
-#             x_min, y_min, z_min, x_max, y_max, z_max = coords[coords["image"] == os.path.join(client, study, img)].values[0, 1:]
-#             for i in range(z_min, z_max+1):
-#                 slice = cv.imread(os.path.join(root, client, study, img, str(i)+".png"), cv.IMREAD_GRAYSCALE)
-#                 cropped_slice = slice[y_min:y_max+1, x_min:x_max+1]
-#                 cv.imwrite(os.path.join(dest_dir, client, study, img, str(i)+".png"), cropped_slice)
-
+            cv2.imwrite(os.path.join(os.path.join(save_path, new_path), str(k) + ".png"), cropped_slice)

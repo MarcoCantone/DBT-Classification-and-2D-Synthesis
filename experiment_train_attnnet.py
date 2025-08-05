@@ -7,18 +7,14 @@ from collections import Counter
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
 import argparse
-import numpy as np
 
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
-import pandas as pd
-from collections import Counter
 from utils import model_rgb2gray, has_parameter
 from train_functions import training
 from config import load_config, write_config, create_object_from_dict, get_class_by_path
-import loss
 def count_parameters(model):
     frozen_params = 0
     trainable_params = 0
@@ -69,7 +65,6 @@ for i in range(0, len(seeds_split)):
 
     print(data_transform)
 
-    # FIXME: lambda function in yaml
     if i == 0:
         config["DATASET"]["params"].update({"slices": eval(config["DATASET"]["params"]["slices"])})
 
@@ -169,10 +164,6 @@ for i in range(0, len(seeds_split)):
 
     model = model.to(device)
 
-    #model = torch.nn.DataParallel(model, device_ids=[0, 1])
-
-    #summary(model, input_size=(1, 1024, 512))  # Specify input size
-
     # create loss, optimizer and scheduler
     loss_class = get_class_by_path(config["LOSS"]["class"])
     loss = loss_class(**config["LOSS"]["params"])
@@ -195,9 +186,6 @@ for i in range(0, len(seeds_split)):
     else:
         print("AMP disabled")
 
-    # print("Number of backbone's parameters: " + str(sum(p.numel() for p in backbone.parameters())))
-    # print("Number of model's parameters: " + str(sum(p.numel() for p in model.parameters())))
-
     res, test_mcc_run, test_acc_run, test_auc_run, test_f1_run = training(dataloader_train=train_dataloader,
                    dataloader_valid=val_dataloader,
                    dataloader_test=test_dataloader,
@@ -211,8 +199,7 @@ for i in range(0, len(seeds_split)):
                    workspace=config["TRAINING"]["workspace"] + "run-" + str(i + 1) + "_seed-" + str(seeds_split[i]),
                    print_per_epoch=20,
                    grad_acc=config["TRAINING"]["grad_acc"],
-                   grad_scaler=config["TRAINING"]["grad_scaler"],
-                   inference=config["TRAINING"]["inference"])
+                   grad_scaler=config["TRAINING"]["grad_scaler"])
 
     test_mcc.append(test_mcc_run)
     test_acc.append(test_acc_run)

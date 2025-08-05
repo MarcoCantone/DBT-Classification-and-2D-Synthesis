@@ -53,7 +53,7 @@ cfg = {
         "resume": False,
         "train_test_split_seed": 42,
         "parallel": None,
-        "workspace": "/home/dellascenza/scripts/results_effnetb3_2dsurf_fede/"
+        "workspace": "PLACEHOLDER"
     },
     "MODEL": {
         "class": "customModels.efficientnetb3",

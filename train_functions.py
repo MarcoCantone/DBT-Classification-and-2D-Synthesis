@@ -125,8 +125,7 @@ def training(dataloader_train,
              workspace: str = None,
              print_per_epoch=10,
              grad_acc=False,
-             grad_scaler=False,
-             inference=False):
+             grad_scaler=False):
     model = model.to(device, non_blocking=True)
 
 
@@ -182,10 +181,6 @@ def training(dataloader_train,
 
     while epoch < epochs:
 
-        # Ignore training and validation while doing inference
-        if inference:
-            break
-
         epoch += 1
 
         print(f"-------- EPOCH {epoch} --------")
@@ -233,14 +228,8 @@ def training(dataloader_train,
 
 
         if num_classes == 2:  # only for binary classification
-            # tn, fp, fn, tp = metrics.confusion_matrix(targets.cpu(), predictions.cpu()).ravel()
-            # tn, fp, fn, tp = int(tn), int(fp), int(fn), int(tp)
             roc = metrics.roc_curve(targets.cpu(), score[:, 1].cpu())  # roc = (fpr, tpr, threshold)
             auc = float(metrics.auc(roc[0], roc[1]))
-            # results["tn"].append(tn)
-            # results["fp"].append(fp)
-            # results["fn"].append(fn)
-            # results["tp"].append(tp)
             results["roc"].append(roc)
             results["auc"].append(auc)
 
@@ -303,8 +292,6 @@ def training(dataloader_train,
     mcc = float(metrics.matthews_corrcoef(targets.cpu(), predictions.cpu()))
 
     if num_classes == 2:  # only for binary classification
-        # tn, fp, fn, tp = metrics.confusion_matrix(targets.cpu(), predictions.cpu()).ravel()
-        # tn, fp, fn, tp = int(tn), int(fp), int(fn), int(tp)
         roc = metrics.roc_curve(targets.cpu(), score[:, 1].cpu())  # roc = (fpr, tpr, threshold)
         auc = float(metrics.auc(roc[0], roc[1]))
         f1score = float(metrics.f1_score(targets.cpu().numpy(), predictions.cpu().numpy()))

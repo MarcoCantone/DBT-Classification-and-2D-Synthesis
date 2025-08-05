@@ -7,16 +7,6 @@ import numpy as np
 import os
 import inspect
 
-BCS_DBT_classes = ("Normal", "Actionable", "Benign", "Cancer")
-
-
-# def collate_fn_list(batch):
-#     images, labels = zip(*batch)
-#     labels = torch.stack(labels)
-#
-#     return images, labels
-
-
 def model_rgb2gray(model):
     # identify first layer
 
