@@ -16,7 +16,7 @@ image given the original 3D input data of a DBT tomosynthesis image.
 ## Launchable scripts and their purpose
 **Recommendations**:
 
-This framework requires a proper configuration YAML file (examples given per script).
+This framework requires a proper configuration YAML file for each runnable script (examples given per script for each purpose).
 ***
 
 
